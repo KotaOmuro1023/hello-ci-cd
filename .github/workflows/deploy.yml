@@ -3,7 +3,12 @@ name: Deploy Hello World
 
 # 「いつ」この処理を動かすか
 on:
-  # main ブランチにpush（マージ含む）されたとき
+  # PR作成・更新時 → CIのみ
+  pull_request:
+    branches:
+      - main
+
+  # main ブランチにpush（マージ含む）されたとき → CI → CD
   push:
     branches:
       - main
@@ -19,9 +24,33 @@ permissions:
 
 # 実際の処理内容を書く場所
 jobs:
-  # job の名前（自分で決めていい）
+  # ======= CI（チェック用）=======
+  ci:
+    name: CI
+    # 命令が実行される仮想PC
+    runs-on: ubuntu-latest
+
+    steps:
+      # ① リポジトリの中身を取得する
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ② Node.js を使えるようにする（HTMLチェック用）
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # ③ HTMLが壊れていないかチェック
+      - name: Lint HTML
+        run: npx html-validate index.html
+
+  # ======= CD（デプロイ用）=======
   deploy:
-    # どんなマシンで動かすか（GitHubが用意してくれる）
+    name: CD
+    # CI が成功したときだけ実行
+    needs: ci
+    # 命令が実行される仮想PC
     runs-on: ubuntu-latest
 
     # 上から順番に実行される作業
