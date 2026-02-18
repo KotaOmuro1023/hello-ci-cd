@@ -1,0 +1,46 @@
+# この名前はActions画面に表示される名前
+name: Deploy Hello World
+
+# 「いつ」この処理を動かすか
+on:
+  # main ブランチにpush（マージ含む）されたとき
+  push:
+    branches:
+      - main
+
+# GitHub Actions に「何をしていいか」の権限を渡す
+permissions:
+  # リポジトリの中身を読む権限
+  contents: read
+  # GitHub Pages にアップロードする権限
+  pages: write
+  # GitHub が発行した認証情報を使う権限
+  id-token: write
+
+# 実際の処理内容を書く場所
+jobs:
+  # job の名前（自分で決めていい）
+  deploy:
+    # どんなマシンで動かすか（GitHubが用意してくれる）
+    runs-on: ubuntu-latest
+
+    # 上から順番に実行される作業
+    steps:
+      # ① リポジトリの中身を取得する
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ② GitHub Pages 用の準備をする
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # ③ 公開したいファイルをまとめる
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # 今回はリポジトリ全体を対象にする
+          path: .
+
+      # ④ GitHub Pages にデプロイ（公開）する
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
